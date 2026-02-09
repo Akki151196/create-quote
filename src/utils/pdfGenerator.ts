@@ -49,6 +49,24 @@ const DEFAULT_COMPANY_DETAILS = {
   gstin: '',
 };
 
+function formatCurrency(value: number | string): string {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return '0';
+
+  const formatted = numValue.toFixed(2);
+  const parts = formatted.split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1];
+
+  const lastThree = integerPart.slice(-3);
+  const otherNumbers = integerPart.slice(0, -3);
+  const formattedInteger = otherNumbers !== ''
+    ? otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree
+    : lastThree;
+
+  return decimalPart === '00' ? formattedInteger : `${formattedInteger}.${decimalPart}`;
+}
+
 async function addLogoToPDF(doc: jsPDF, yPosition: number): Promise<number> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -205,9 +223,9 @@ export async function generateQuotationPDF(quotation: QuotationData) {
     (index + 1).toString(),
     item.item_name,
     item.description || '-',
-    `₹${item.unit_price.toLocaleString('en-IN')}`,
+    `Rs ${formatCurrency(item.unit_price)}`,
     item.quantity.toString(),
-    `₹${item.total.toLocaleString('en-IN')}`
+    `Rs ${formatCurrency(item.total)}`
   ]);
 
   autoTable(doc, {
@@ -219,20 +237,26 @@ export async function generateQuotationPDF(quotation: QuotationData) {
       fillColor: [128, 0, 32],
       textColor: [255, 255, 255],
       fontStyle: 'bold',
-      fontSize: 10
+      fontSize: 10,
+      halign: 'center'
     },
     bodyStyles: {
-      fontSize: 9
+      fontSize: 9,
+      cellPadding: 3
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 35 },
-      2: { cellWidth: 45 },
-      3: { cellWidth: 25, halign: 'right' },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 50 },
+      3: { cellWidth: 28, halign: 'right' },
       4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 30, halign: 'right' }
+      5: { cellWidth: 28, halign: 'right' }
     },
-    margin: { left: 20, right: 20 }
+    margin: { left: 20, right: 20 },
+    styles: {
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1
+    }
   });
 
   yPosition = (doc as any).lastAutoTable.finalY + 10;
@@ -244,31 +268,31 @@ export async function generateQuotationPDF(quotation: QuotationData) {
   doc.setFont('helvetica', 'normal');
 
   doc.text('Subtotal:', labelX, yPosition);
-  doc.text(`₹${quotation.subtotal.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+  doc.text(`Rs ${formatCurrency(quotation.subtotal)}`, summaryX, yPosition, { align: 'right' });
 
   if (quotation.discount_amount > 0) {
     yPosition += 6;
     doc.text(`Discount (${quotation.discount_percentage}%):`, labelX, yPosition);
     doc.setTextColor(200, 0, 0);
-    doc.text(`-₹${quotation.discount_amount.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+    doc.text(`-Rs ${formatCurrency(quotation.discount_amount)}`, summaryX, yPosition, { align: 'right' });
     doc.setTextColor(0, 0, 0);
   }
 
   if (quotation.service_charges > 0) {
     yPosition += 6;
     doc.text('Service Charges:', labelX, yPosition);
-    doc.text(`₹${quotation.service_charges.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+    doc.text(`Rs ${formatCurrency(quotation.service_charges)}`, summaryX, yPosition, { align: 'right' });
   }
 
   if (quotation.external_charges > 0) {
     yPosition += 6;
     doc.text('External Charges:', labelX, yPosition);
-    doc.text(`₹${quotation.external_charges.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+    doc.text(`Rs ${formatCurrency(quotation.external_charges)}`, summaryX, yPosition, { align: 'right' });
   }
 
   yPosition += 6;
   doc.text(`Tax (${quotation.tax_percentage}%):`, labelX, yPosition);
-  doc.text(`₹${quotation.tax_amount.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+  doc.text(`Rs ${formatCurrency(quotation.tax_amount)}`, summaryX, yPosition, { align: 'right' });
 
   yPosition += 8;
   doc.setLineWidth(0.5);
@@ -279,7 +303,7 @@ export async function generateQuotationPDF(quotation: QuotationData) {
   doc.setFontSize(12);
   doc.setTextColor(128, 0, 32);
   doc.text('Grand Total:', labelX, yPosition);
-  doc.text(`₹${quotation.grand_total.toLocaleString('en-IN')}`, summaryX, yPosition, { align: 'right' });
+  doc.text(`Rs ${formatCurrency(quotation.grand_total)}`, summaryX, yPosition, { align: 'right' });
   doc.setTextColor(0, 0, 0);
 
   yPosition += 15;
@@ -447,7 +471,7 @@ export async function generatePackagePDF(packageData: PackageData) {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(128, 0, 32);
     doc.text(
-      `₹${packageData.base_price_per_person.toLocaleString('en-IN')} per person`,
+      `Rs ${formatCurrency(packageData.base_price_per_person)} per person`,
       pageWidth / 2,
       yPosition,
       { align: 'center' }
@@ -470,7 +494,7 @@ export async function generatePackagePDF(packageData: PackageData) {
       (index + 1).toString(),
       item.item_name,
       item.description || '-',
-      `₹${item.unit_price.toLocaleString('en-IN')}`,
+      `Rs ${formatCurrency(item.unit_price)}`,
       `x${item.quantity_multiplier}`,
     ]);
 
@@ -483,19 +507,25 @@ export async function generatePackagePDF(packageData: PackageData) {
         fillColor: [128, 0, 32],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 10
+        fontSize: 10,
+        halign: 'center'
       },
       bodyStyles: {
-        fontSize: 9
+        fontSize: 9,
+        cellPadding: 3
       },
       columnStyles: {
         0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 45 },
-        2: { cellWidth: 60 },
+        1: { cellWidth: 48 },
+        2: { cellWidth: 62 },
         3: { cellWidth: 30, halign: 'right' },
         4: { cellWidth: 25, halign: 'center' }
       },
-      margin: { left: 20, right: 20 }
+      margin: { left: 20, right: 20 },
+      styles: {
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      }
     });
 
     yPosition = (doc as any).lastAutoTable.finalY + 12;
@@ -517,7 +547,7 @@ export async function generatePackagePDF(packageData: PackageData) {
       (index + 1).toString(),
       item.item_name,
       item.description || '-',
-      `₹${item.unit_price.toLocaleString('en-IN')}`,
+      `Rs ${formatCurrency(item.unit_price)}`,
       `x${item.quantity_multiplier}`,
     ]);
 
@@ -530,19 +560,25 @@ export async function generatePackagePDF(packageData: PackageData) {
         fillColor: [128, 0, 32],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 10
+        fontSize: 10,
+        halign: 'center'
       },
       bodyStyles: {
-        fontSize: 9
+        fontSize: 9,
+        cellPadding: 3
       },
       columnStyles: {
         0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 45 },
-        2: { cellWidth: 60 },
+        1: { cellWidth: 48 },
+        2: { cellWidth: 62 },
         3: { cellWidth: 30, halign: 'right' },
         4: { cellWidth: 25, halign: 'center' }
       },
-      margin: { left: 20, right: 20 }
+      margin: { left: 20, right: 20 },
+      styles: {
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      }
     });
 
     yPosition = (doc as any).lastAutoTable.finalY + 10;
