@@ -30,25 +30,28 @@ export function AdminLayout({ children, title, showHomeButton = false }: AdminLa
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
       <div className="flex-1 flex flex-col min-w-0 h-full">
-        <header className="bg-gradient-to-r from-maroon-800 to-maroon-900 flex-shrink-0 z-30 shadow-md">
-          <div className="flex items-center justify-between px-4 lg:px-6" style={{ height: '56px' }}>
+        <header
+          className="bg-gradient-to-r from-maroon-800 to-maroon-900 flex-shrink-0 z-30 shadow-md"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
+          <div className="flex items-center justify-between px-4 lg:px-6 h-14">
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={openMobileSidebar}
-                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors touch-manipulation active:scale-95 -ml-1"
+                className="lg:hidden flex items-center justify-center w-11 h-11 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors touch-manipulation active:scale-95"
               >
                 <Menu className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden lg:flex items-center justify-center w-10 h-10 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+                className="hidden lg:flex items-center justify-center w-11 h-11 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors"
               >
                 <Menu className="w-5 h-5" />
               </button>
               {showHomeButton && (
                 <Link
                   to="/admin"
-                  className="flex items-center justify-center w-10 h-10 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors touch-manipulation active:scale-95"
+                  className="flex items-center justify-center w-11 h-11 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors touch-manipulation active:scale-95"
                 >
                   <Home className="w-5 h-5" />
                 </Link>
@@ -63,7 +66,10 @@ export function AdminLayout({ children, title, showHomeButton = false }: AdminLa
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 pb-20 lg:pb-8">
+        <main
+          className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 lg:pb-8"
+          style={{ paddingBottom: 'max(calc(70px + env(safe-area-inset-bottom)), 80px)' }}
+        >
           {children}
         </main>
 
