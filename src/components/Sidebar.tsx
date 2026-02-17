@@ -39,23 +39,27 @@ export function Sidebar() {
     <>
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-all duration-300 hover:scale-110"
         aria-label="Toggle menu"
       >
-        {isMobileMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
+        {isMobileMenuOpen ? (
+          <X className="w-6 h-6 text-gray-700 transition-transform duration-300" />
+        ) : (
+          <Menu className="w-6 h-6 text-gray-700 transition-transform duration-300" />
+        )}
       </button>
 
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+      <div
+        className={`lg:hidden fixed inset-0 bg-black z-40 transition-opacity duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
 
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40
         w-64 bg-white shadow-lg min-h-screen flex flex-col
-        transform transition-transform duration-300 ease-in-out
+        transform transition-all duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-6 border-b border-gray-200">
@@ -82,13 +86,13 @@ export function Sidebar() {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? 'bg-maroon-700 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-maroon-700 text-white shadow-md transform scale-105'
+                        : 'text-gray-700 hover:bg-gray-100 hover:transform hover:scale-102'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5 transition-transform duration-200" />
                     <span className="font-medium text-sm">{item.label}</span>
                   </Link>
                 </li>

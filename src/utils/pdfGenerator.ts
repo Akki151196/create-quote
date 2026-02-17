@@ -291,8 +291,8 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
     item.category || '-',
     item.description || '-',
     item.quantity.toString(),
-    `₹ ${formatCurrency(item.unit_price)}`,
-    `₹ ${formatCurrency(item.total)}`
+    `Rs. ${formatCurrency(item.unit_price)}`,
+    `Rs. ${formatCurrency(item.total)}`
   ]);
 
   autoTable(doc, {
@@ -358,31 +358,31 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   const valueX = summaryX + summaryWidth - 5;
 
   doc.text('Subtotal:', labelX, currentY);
-  doc.text(`₹ ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
+  doc.text(`Rs. ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
 
   if (quotation.discount_amount > 0) {
     currentY += 6;
     doc.text(`Discount (${quotation.discount_percentage}%):`, labelX, currentY);
     doc.setTextColor(220, 53, 69);
-    doc.text(`- ₹ ${formatCurrency(quotation.discount_amount)}`, valueX, currentY, { align: 'right' });
+    doc.text(`- Rs. ${formatCurrency(quotation.discount_amount)}`, valueX, currentY, { align: 'right' });
     doc.setTextColor(60, 60, 60);
   }
 
   if (quotation.service_charges > 0) {
     currentY += 6;
     doc.text('Service Charges:', labelX, currentY);
-    doc.text(`₹ ${formatCurrency(quotation.service_charges)}`, valueX, currentY, { align: 'right' });
+    doc.text(`Rs. ${formatCurrency(quotation.service_charges)}`, valueX, currentY, { align: 'right' });
   }
 
   if (quotation.external_charges > 0) {
     currentY += 6;
     doc.text('External Charges:', labelX, currentY);
-    doc.text(`₹ ${formatCurrency(quotation.external_charges)}`, valueX, currentY, { align: 'right' });
+    doc.text(`Rs. ${formatCurrency(quotation.external_charges)}`, valueX, currentY, { align: 'right' });
   }
 
   currentY += 6;
   doc.text(`Tax (GST ${quotation.tax_percentage}%):`, labelX, currentY);
-  doc.text(`₹ ${formatCurrency(quotation.tax_amount)}`, valueX, currentY, { align: 'right' });
+  doc.text(`Rs. ${formatCurrency(quotation.tax_amount)}`, valueX, currentY, { align: 'right' });
 
   currentY += 8;
   doc.setDrawColor(128, 0, 32);
@@ -393,7 +393,7 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(128, 0, 32);
   doc.text('Grand Total:', labelX, currentY);
-  doc.text(`₹ ${formatCurrency(quotation.grand_total)}`, valueX, currentY, { align: 'right' });
+  doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY, { align: 'right' });
 
   if (quotation.advance_paid) {
     currentY += 7;
@@ -401,13 +401,13 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(40, 167, 69);
     doc.text('Advance Paid:', labelX, currentY);
-    doc.text(`₹ ${formatCurrency(quotation.advance_paid)}`, valueX, currentY, { align: 'right' });
+    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY, { align: 'right' });
 
     currentY += 6;
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(220, 53, 69);
     doc.text('Balance Due:', labelX, currentY);
-    doc.text(`₹ ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY, { align: 'right' });
+    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY, { align: 'right' });
   }
 
   return currentY + 10;
@@ -628,7 +628,7 @@ export async function generatePackagePDF(packageData: PackageData) {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
     doc.text(
-      `₹ ${formatCurrency(packageData.base_price_per_person)} per person`,
+      `Rs. ${formatCurrency(packageData.base_price_per_person)} per person`,
       pageWidth / 2,
       yPos + 3,
       { align: 'center' }
@@ -651,7 +651,7 @@ export async function generatePackagePDF(packageData: PackageData) {
       (index + 1).toString(),
       item.item_name,
       item.description || '-',
-      `₹ ${formatCurrency(item.unit_price)}`,
+      `Rs. ${formatCurrency(item.unit_price)}`,
       `x${item.quantity_multiplier}`,
     ]);
 
@@ -710,7 +710,7 @@ export async function generatePackagePDF(packageData: PackageData) {
       (index + 1).toString(),
       item.item_name,
       item.description || '-',
-      `₹ ${formatCurrency(item.unit_price)}`,
+      `Rs. ${formatCurrency(item.unit_price)}`,
       `x${item.quantity_multiplier}`,
     ]);
 
