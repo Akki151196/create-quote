@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash2, Plus, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { AdminLayout } from '../components/AdminLayout';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { generateQuotationPDF } from '../utils/pdfGenerator';
 import { QuotationPreviewModal } from '../components/QuotationPreviewModal';
 
@@ -123,18 +124,16 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-xl text-gray-600">Loading...</div>
-        </div>
+      <AdminLayout title="Dashboard">
+        <LoadingSpinner fullScreen />
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout title="Dashboard">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="max-w-7xl mx-auto app-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-maroon-600">
             <div className="flex items-center justify-between">
               <div>
@@ -177,18 +176,18 @@ export function Dashboard() {
         </div>
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Recent Quotations</h2>
+          <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Recent Quotations</h2>
             <Link
               to="/admin/quotations/new"
-              className="flex items-center gap-2 bg-gradient-to-r from-maroon-700 to-maroon-900 text-white px-4 py-2 rounded-lg hover:from-maroon-800 hover:to-maroon-950 transition-all"
+              className="flex items-center gap-2 bg-gradient-to-r from-maroon-700 to-maroon-900 text-white px-4 py-2 rounded-lg hover:from-maroon-800 hover:to-maroon-950 transition-all text-sm w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               New Quotation
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -282,6 +281,75 @@ export function Dashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="lg:hidden divide-y divide-gray-200">
+            {quotations.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                No quotations yet. Create your first quotation!
+              </div>
+            ) : (
+              quotations.map((quotation) => (
+                <div key={quotation.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{quotation.quotation_number}</p>
+                      <p className="text-sm text-gray-600 mt-1">{quotation.client_name}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(quotation.status)}`}>
+                      {quotation.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                    <div>
+                      <p className="text-gray-500">Event Type</p>
+                      <p className="text-gray-900 font-medium">{quotation.event_type}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Event Date</p>
+                      <p className="text-gray-900 font-medium">
+                        {new Date(quotation.event_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-bold text-gray-900">
+                      ₹{quotation.grand_total.toLocaleString('en-IN')}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setPreviewQuotationId(quotation.id)}
+                        className="text-blue-600 hover:text-blue-700 p-2"
+                        title="View"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                      <Link
+                        to={`/admin/quotations/${quotation.id}`}
+                        className="text-maroon-600 hover:text-maroon-700 p-2"
+                        title="Edit"
+                      >
+                        <Pencil className="w-5 h-5" />
+                      </Link>
+                      <button
+                        onClick={() => handleDownloadPDF(quotation.id)}
+                        className="text-green-600 hover:text-green-700 p-2"
+                        title="Download PDF"
+                      >
+                        <Download className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(quotation.id)}
+                        className="text-red-600 hover:text-red-700 p-2"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
