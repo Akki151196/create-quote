@@ -157,6 +157,41 @@ async function addLogoToHeader(doc: jsPDF, xPos: number, yPos: number, size: num
   });
 }
 
+async function addWatermark(doc: jsPDF): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      try {
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const watermarkSize = 80;
+        const xPos = (pageWidth - watermarkSize) / 2;
+        const yPos = (pageHeight - watermarkSize) / 2;
+
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({ opacity: 0.05 }));
+        doc.addImage(img, 'PNG', xPos, yPos, watermarkSize, watermarkSize);
+        doc.restoreGraphicsState();
+        resolve();
+      } catch (error) {
+        console.warn('Error adding watermark:', error);
+        resolve();
+      }
+    };
+
+    img.onerror = () => {
+      console.warn('Watermark load failed');
+      resolve();
+    };
+
+    img.src = '/Gemini_Generated_Image_ui2uh7ui2uh7ui2u-removebg-preview.png';
+
+    setTimeout(() => resolve(), 2000);
+  });
+}
+
 function addProfessionalHeader(
   doc: jsPDF,
   companyDetails: any,
@@ -172,9 +207,9 @@ function addProfessionalHeader(
   doc.setFillColor(128, 0, 32);
   doc.rect(0, 0, pageWidth, 8, 'F');
 
-  yPos = 25;
+  yPos = 28;
 
-  const logoSize = 22;
+  const logoSize = 28;
   const logoX = 15;
 
   doc.setFontSize(20);
@@ -347,13 +382,13 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
       fillColor: [248, 249, 250]
     },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 35 },
-      2: { cellWidth: 25 },
-      3: { cellWidth: 45 },
-      4: { cellWidth: 12, halign: 'center' },
-      5: { cellWidth: 25, halign: 'right' },
-      6: { cellWidth: 28, halign: 'right', fontStyle: 'bold' }
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 22 },
+      3: { cellWidth: 48 },
+      4: { cellWidth: 15, halign: 'center' },
+      5: { cellWidth: 28, halign: 'right' },
+      6: { cellWidth: 34, halign: 'right', fontStyle: 'bold' }
     },
     margin: { left: 20, right: 20 },
     styles: {
@@ -368,7 +403,7 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
 
 function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const summaryWidth = 95;
+  const summaryWidth = 105;
   const summaryX = pageWidth - 25 - summaryWidth;
   let currentY = yPos + 10;
 
@@ -384,8 +419,8 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
 
-  const labelX = summaryX + 8;
-  const valueX = summaryX + summaryWidth - 8;
+  const labelX = summaryX + 10;
+  const valueX = summaryX + summaryWidth - 10;
 
   doc.text('Subtotal:', labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
@@ -420,13 +455,13 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.line(labelX, currentY - 3, valueX, currentY - 3);
 
   doc.setFillColor(128, 0, 32);
-  doc.rect(summaryX, currentY + 2, summaryWidth, 12, 'F');
+  doc.rect(summaryX, currentY + 2, summaryWidth, 14, 'F');
 
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('Grand Total:', labelX, currentY + 9);
-  doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY + 9, { align: 'right' });
+  doc.text('GRAND TOTAL:', labelX, currentY + 10);
+  doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY + 10, { align: 'right' });
 
   if (quotation.advance_paid) {
     currentY += 20;
@@ -534,7 +569,13 @@ export async function generateQuotationPDF(quotation: QuotationData) {
     const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
 
     try {
-      await addLogoToHeader(doc, 15, 20, 22);
+      await addWatermark(doc);
+    } catch (error) {
+      console.warn('Watermark failed, continuing without watermark');
+    }
+
+    try {
+      await addLogoToHeader(doc, 15, 23, 28);
     } catch (error) {
       console.warn('Logo loading failed, continuing without logo');
     }
