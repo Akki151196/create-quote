@@ -225,7 +225,7 @@ function addProfessionalHeader(
   yPos += 12;
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
 
   if (companyDetails.address) {
     doc.text(companyDetails.address, logoX + logoSize + 5, yPos);
@@ -262,7 +262,7 @@ function addProfessionalHeader(
   rightYPos += 8;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   doc.text('Number:', rightColX, rightYPos);
   doc.setFont('helvetica', 'normal');
   doc.text(documentNumber, rightColX + 18, rightYPos);
@@ -314,7 +314,7 @@ function addClientSection(doc: jsPDF, quotation: QuotationData, yPos: number): n
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   doc.text(`Phone: ${quotation.client_phone}`, 25, yPos + 20);
 
   if (quotation.client_email) {
@@ -334,7 +334,7 @@ function addClientSection(doc: jsPDF, quotation: QuotationData, yPos: number): n
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   let eventYPos = yPos + 14;
   doc.text(`Type: ${quotation.event_type}`, rightBoxX + 5, eventYPos);
   eventYPos += 5;
@@ -374,21 +374,21 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
       cellPadding: 4
     },
     bodyStyles: {
-      fontSize: 8,
+      fontSize: 8.5,
       cellPadding: 3,
-      textColor: [40, 40, 40]
+      textColor: [0, 0, 0]
     },
     alternateRowStyles: {
       fillColor: [248, 249, 250]
     },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 40 },
-      2: { cellWidth: 22 },
-      3: { cellWidth: 48 },
+      1: { cellWidth: 38 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 46 },
       4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 28, halign: 'right' },
-      6: { cellWidth: 34, halign: 'right', fontStyle: 'bold' }
+      5: { cellWidth: 30, halign: 'right' },
+      6: { cellWidth: 38, halign: 'right', fontStyle: 'bold' }
     },
     margin: { left: 20, right: 20 },
     styles: {
@@ -417,7 +417,7 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   currentY += 10;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
 
   const labelX = summaryX + 10;
   const valueX = summaryX + summaryWidth - 10;
@@ -428,9 +428,9 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   if (quotation.discount_amount > 0) {
     currentY += 6;
     doc.text(`Discount (${quotation.discount_percentage}%):`, labelX, currentY);
-    doc.setTextColor(220, 53, 69);
+    doc.setTextColor(200, 30, 40);
     doc.text(`- Rs. ${formatCurrency(quotation.discount_amount)}`, valueX, currentY, { align: 'right' });
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
   }
 
   if (quotation.service_charges > 0) {
@@ -507,7 +507,7 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
     currentY += 6;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     const termsLines = doc.splitTextToSize(terms, pageWidth - 40);
     doc.text(termsLines, 20, currentY);
     currentY += termsLines.length * 4 + 8;
@@ -526,7 +526,7 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
     currentY += 6;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     const bankLines = doc.splitTextToSize(bankDetails, 80);
     doc.text(bankLines, 20, currentY);
   }
@@ -534,7 +534,7 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
   const signatureX = pageWidth - 80;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   doc.text('Authorized Signature', signatureX, currentY);
   doc.setLineWidth(0.3);
   doc.setDrawColor(100, 100, 100);
@@ -567,12 +567,6 @@ export async function generateQuotationPDF(quotation: QuotationData) {
   try {
     const doc = new jsPDF();
     const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
-
-    try {
-      await addWatermark(doc);
-    } catch (error) {
-      console.warn('Watermark failed, continuing without watermark');
-    }
 
     try {
       await addLogoToHeader(doc, 15, 23, 28);
@@ -621,7 +615,7 @@ export async function generateQuotationPDF(quotation: QuotationData) {
       yPos += 5;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      doc.setTextColor(60, 60, 60);
+      doc.setTextColor(0, 0, 0);
       const remarksLines = doc.splitTextToSize(quotation.remarks, 110);
       doc.text(remarksLines, 20, yPos);
     }
