@@ -26,12 +26,12 @@ export function AdminLayout({ children, title, showHomeButton = false }: AdminLa
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-gradient-to-r from-maroon-800 to-maroon-900 sticky top-0 z-30 shadow-md">
-          <div className="flex items-center justify-between px-4 lg:px-6" style={{ height: '60px' }}>
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        <header className="bg-gradient-to-r from-maroon-800 to-maroon-900 flex-shrink-0 z-30 shadow-md">
+          <div className="flex items-center justify-between px-4 lg:px-6" style={{ height: '56px' }}>
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={openMobileSidebar}
@@ -63,7 +63,7 @@ export function AdminLayout({ children, title, showHomeButton = false }: AdminLa
           </div>
         </header>
 
-        <main className="flex-1 p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 pb-20 lg:pb-8">
           {children}
         </main>
 
