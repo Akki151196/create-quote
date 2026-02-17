@@ -37,6 +37,9 @@ interface Quotation {
   terms_and_conditions: string | null;
   validity_days: number;
   remarks: string | null;
+  advance_paid: number;
+  balance_due: number;
+  payment_status: string;
 }
 
 interface QuotationPreviewModalProps {
@@ -400,6 +403,31 @@ export function QuotationPreviewModal({ quotationId, onClose, onStatusChange }: 
                     <span>₹{quotation.grand_total.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
+
+                {quotation.advance_paid > 0 && (
+                  <>
+                    <div className="flex justify-between text-green-600 mt-3">
+                      <span>Advance Paid:</span>
+                      <span className="font-medium">₹{quotation.advance_paid.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between text-red-600">
+                      <span className="font-semibold">Balance Due:</span>
+                      <span className="font-semibold">₹{quotation.balance_due.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-gray-700">Payment Status:</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        quotation.payment_status === 'paid'
+                          ? 'bg-green-100 text-green-800'
+                          : quotation.payment_status === 'partial'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {quotation.payment_status === 'paid' ? 'Paid' : quotation.payment_status === 'partial' ? 'Partial Payment' : 'Pending'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {quotation.terms_and_conditions && (

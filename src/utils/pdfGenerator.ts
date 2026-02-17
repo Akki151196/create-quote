@@ -35,6 +35,7 @@ interface QuotationData {
   items: LineItem[];
   advance_paid?: number;
   balance_due?: number;
+  payment_status?: string;
   company_details?: {
     name?: string;
     address?: string;
@@ -473,7 +474,10 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
     (quotation.discount_amount > 0 ? 1 : 0) +
     (quotation.service_charges > 0 ? 1 : 0) +
     (quotation.external_charges > 0 ? 1 : 0);
-  const summaryHeight = (totalRowsNeeded * 7) + 40 + (quotation.advance_paid ? 26 : 0);
+  const paymentRowsHeight = (quotation.advance_paid && quotation.advance_paid > 0)
+    ? (26 + (quotation.payment_status ? 13 : 0))
+    : 0;
+  const summaryHeight = (totalRowsNeeded * 7) + 40 + paymentRowsHeight;
 
   doc.setFillColor(250, 251, 253);
   doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 4, 4, 'F');
@@ -533,7 +537,7 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
 
   currentY += 18;
 
-  if (quotation.advance_paid) {
+  if (quotation.advance_paid && quotation.advance_paid > 0) {
     currentY += 3;
     doc.setFillColor(240, 253, 244);
     doc.rect(summaryX, currentY, summaryWidth, 10, 'F');
@@ -551,6 +555,32 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
     doc.text('Balance Due:', labelX, currentY + 6.5);
     doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 6.5, { align: 'right' });
     currentY += 10;
+
+    if (quotation.payment_status) {
+      currentY += 3;
+      const paymentStatusText = quotation.payment_status === 'paid'
+        ? 'Paid'
+        : quotation.payment_status === 'partial'
+        ? 'Partial Payment'
+        : 'Pending';
+
+      const statusColor = quotation.payment_status === 'paid'
+        ? [34, 197, 94]
+        : quotation.payment_status === 'partial'
+        ? [234, 179, 8]
+        : [239, 68, 68];
+
+      doc.setFillColor(255, 251, 235);
+      doc.rect(summaryX, currentY, summaryWidth, 10, 'F');
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text('Payment Status:', labelX, currentY + 6.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+      doc.text(paymentStatusText, valueX, currentY + 6.5, { align: 'right' });
+      currentY += 10;
+    }
   }
 
   return currentY + 10;
