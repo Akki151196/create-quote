@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { supabase } from '../lib/supabase';
 
 interface LineItem {
   item_name: string;
@@ -93,6 +94,47 @@ function formatCurrency(value: number | string): string {
 function sanitizeText(text: string): string {
   if (!text) return '';
   return text.replace(/[^\x20-\x7E\u00A0-\u00FF\u0900-\u097F]/g, '').trim();
+}
+
+async function fetchCompanySettings() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('company_settings')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching company settings:', error);
+      return null;
+    }
+
+    if (data) {
+      return {
+        name: data.business_name || DEFAULT_COMPANY_DETAILS.name,
+        address: data.address || DEFAULT_COMPANY_DETAILS.address,
+        phone: data.phone || DEFAULT_COMPANY_DETAILS.phone,
+        email: data.email || DEFAULT_COMPANY_DETAILS.email,
+        gstin: data.gst_number || DEFAULT_COMPANY_DETAILS.gstin,
+        website: data.website || DEFAULT_COMPANY_DETAILS.website,
+        bank_name: data.bank_name || DEFAULT_COMPANY_DETAILS.bank_name,
+        account_number: data.account_number || DEFAULT_COMPANY_DETAILS.account_number,
+        ifsc_code: data.ifsc_code || DEFAULT_COMPANY_DETAILS.ifsc_code,
+        upi_id: data.upi_id || '',
+        default_terms: data.default_terms || DEFAULT_TERMS,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching company settings:', error);
+    return null;
+  }
 }
 
 async function addLogoToPDF(doc: jsPDF, xPos: number, yPos: number): Promise<void> {
@@ -540,9 +582,15 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
   }
 
   if (companyDetails.bank_name || DEFAULT_BANK_DETAILS) {
-    const bankDetails = companyDetails.bank_name
-      ? `Bank: ${sanitizeText(companyDetails.bank_name)}\nAccount: ${sanitizeText(companyDetails.account_number)}\nIFSC: ${sanitizeText(companyDetails.ifsc_code)}`
-      : DEFAULT_BANK_DETAILS;
+    let bankDetails;
+    if (companyDetails.bank_name) {
+      bankDetails = `Bank: ${sanitizeText(companyDetails.bank_name)}\nAccount: ${sanitizeText(companyDetails.account_number)}\nIFSC: ${sanitizeText(companyDetails.ifsc_code)}`;
+      if (companyDetails.upi_id) {
+        bankDetails += `\nUPI: ${sanitizeText(companyDetails.upi_id)}`;
+      }
+    } else {
+      bankDetails = DEFAULT_BANK_DETAILS;
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
@@ -588,7 +636,13 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
 export async function generateQuotationPDF(quotation: QuotationData) {
   try {
     const doc = new jsPDF();
-    const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
+
+    const savedSettings = await fetchCompanySettings();
+    const companyDetails = {
+      ...DEFAULT_COMPANY_DETAILS,
+      ...(savedSettings || {}),
+      ...quotation.company_details
+    };
 
     try {
       await addLogoToHeader(doc, 25, 25, 28);
@@ -645,7 +699,8 @@ export async function generateQuotationPDF(quotation: QuotationData) {
     yPos = addPricingSummary(doc, quotation, yPos);
 
     yPos += 12;
-    addFooter(doc, companyDetails, quotation.terms_and_conditions || DEFAULT_TERMS, yPos);
+    const termsToUse = quotation.terms_and_conditions || savedSettings?.default_terms || DEFAULT_TERMS;
+    addFooter(doc, companyDetails, termsToUse, yPos);
 
     const filename = `Quotation_${quotation.quotation_number || 'Draft'}_${(quotation.client_name || 'Client').replace(/\s+/g, '_')}.pdf`;
     doc.save(filename);
@@ -685,7 +740,13 @@ export async function generatePackagePDF(packageData: PackageData) {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...packageData.company_details };
+
+    const savedSettings = await fetchCompanySettings();
+    const companyDetails = {
+      ...DEFAULT_COMPANY_DETAILS,
+      ...(savedSettings || {}),
+      ...packageData.company_details
+    };
 
     let yPos = addProfessionalHeader(
     doc,
