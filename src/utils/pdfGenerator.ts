@@ -217,17 +217,19 @@ function addProfessionalHeader(
   const logoSize = 28;
   const logoX = 25;
 
-  doc.setFontSize(15);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(123, 0, 0);
-  doc.text(sanitizeText(companyDetails.name), logoX + logoSize + 5, yPos);
+  const companyNameLines = doc.splitTextToSize(sanitizeText(companyDetails.name), 100);
+  doc.text(companyNameLines, logoX + logoSize + 5, yPos);
 
+  const nameHeight = companyNameLines.length * 5;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 100);
-  doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + 6);
+  doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + nameHeight + 2);
 
-  yPos += 14;
+  yPos += nameHeight + 8;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);

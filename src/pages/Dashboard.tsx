@@ -152,44 +152,44 @@ export function Dashboard() {
   return (
     <AdminLayout title="Dashboard">
       <div className="max-w-7xl mx-auto app-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-maroon-600">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Total Quotations</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">{stats.total}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-b-4 md:border-l-4 md:border-b-0 border-red-900 hover:shadow-md transition-shadow">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Total</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.total}</p>
               </div>
-              <FileText className="w-12 h-12 text-maroon-600" />
+              <FileText className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-red-900" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Accepted</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">{stats.accepted}</p>
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-b-4 md:border-l-4 md:border-b-0 border-green-500 hover:shadow-md transition-shadow">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Accepted</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.accepted}</p>
               </div>
-              <CheckCircle className="w-12 h-12 text-green-500" />
+              <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Pending</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">{stats.pending}</p>
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-b-4 md:border-l-4 md:border-b-0 border-blue-500 hover:shadow-md transition-shadow">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Pending</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.pending}</p>
               </div>
-              <Clock className="w-12 h-12 text-blue-500" />
+              <Clock className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-blue-500" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Rejected</p>
-                <p className="text-3xl font-bold text-red-600 mt-2">{stats.rejected}</p>
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-b-4 md:border-l-4 md:border-b-0 border-red-500 hover:shadow-md transition-shadow">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Rejected</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.rejected}</p>
               </div>
-              <XCircle className="w-12 h-12 text-red-500" />
+              <XCircle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-red-500" />
             </div>
           </div>
         </div>
@@ -307,57 +307,64 @@ export function Dashboard() {
             </table>
           </div>
 
-          <div className="lg:hidden divide-y divide-gray-200">
+          <div className="lg:hidden p-3 space-y-3">
             {quotations.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                No quotations yet. Create your first quotation!
+              <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl">
+                <FileText className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                <p className="font-medium">No quotations yet</p>
+                <p className="text-sm mt-1">Create your first quotation!</p>
               </div>
             ) : (
               quotations.map((quotation) => (
-                <div key={quotation.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={quotation.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-all">
                   <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{quotation.quotation_number}</p>
-                      <p className="text-sm text-gray-600 mt-1">{quotation.client_name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-bold text-gray-900 truncate">{quotation.client_name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{quotation.quotation_number}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(quotation.status)}`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${getStatusBadge(quotation.status)}`}>
                       {quotation.status}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+
+                  <div className="grid grid-cols-2 gap-3 py-3 border-y border-gray-100">
                     <div>
-                      <p className="text-gray-500">Event Type</p>
-                      <p className="text-gray-900 font-medium">{quotation.event_type}</p>
+                      <p className="text-xs text-gray-500 font-medium mb-1">Event</p>
+                      <p className="text-sm text-gray-900 font-semibold">{quotation.event_type}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Event Date</p>
-                      <p className="text-gray-900 font-medium">
-                        {new Date(quotation.event_date).toLocaleDateString()}
+                      <p className="text-xs text-gray-500 font-medium mb-1">Date</p>
+                      <p className="text-sm text-gray-900 font-semibold">
+                        {new Date(quotation.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-bold text-gray-900">
-                      ₹{quotation.grand_total.toLocaleString('en-IN')}
-                    </p>
-                    <div className="flex items-center gap-3">
+
+                  <div className="flex items-center justify-between mt-3">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Total Amount</p>
+                      <p className="text-xl font-bold text-red-900">
+                        ₹{quotation.grand_total.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => setPreviewQuotationId(quotation.id)}
-                        className="text-blue-600 hover:text-blue-700 p-2"
+                        className="text-blue-600 active:text-blue-700 p-2.5 bg-blue-50 rounded-lg active:scale-95 transition-all"
                         title="View"
                       >
                         <Eye className="w-5 h-5" />
                       </button>
                       <Link
                         to={`/admin/quotations/${quotation.id}`}
-                        className="text-maroon-600 hover:text-maroon-700 p-2"
+                        className="text-maroon-600 active:text-maroon-700 p-2.5 bg-red-50 rounded-lg active:scale-95 transition-all"
                         title="Edit"
                       >
                         <Pencil className="w-5 h-5" />
                       </Link>
                       <button
                         onClick={() => handleDownloadPDF(quotation.id)}
-                        className="text-green-600 hover:text-green-700 p-2 disabled:opacity-50"
+                        className="text-green-600 active:text-green-700 p-2.5 bg-green-50 rounded-lg disabled:opacity-50 active:scale-95 transition-all"
                         title="Download PDF"
                         disabled={downloadingPDF === quotation.id}
                       >
@@ -369,7 +376,7 @@ export function Dashboard() {
                       </button>
                       <button
                         onClick={() => handleDelete(quotation.id)}
-                        className="text-red-600 hover:text-red-700 p-2"
+                        className="text-red-600 active:text-red-700 p-2.5 bg-red-50 rounded-lg active:scale-95 transition-all"
                         title="Delete"
                       >
                         <Trash2 className="w-5 h-5" />
