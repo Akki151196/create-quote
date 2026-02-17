@@ -464,60 +464,75 @@ function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number)
 }
 
 export async function generateQuotationPDF(quotation: QuotationData) {
-  const doc = new jsPDF();
-  const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
-
   try {
-    await addLogoToPDF(doc, 20, 15);
-  } catch (error) {
-    console.error('Error loading logo:', error);
-  }
+    const doc = new jsPDF();
+    const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
 
-  const validUntil = new Date();
-  validUntil.setDate(validUntil.getDate() + quotation.validity_days);
+    try {
+      await addLogoToPDF(doc, 20, 15);
+    } catch (error) {
+      console.warn('Error loading logo, continuing without logo:', error);
+    }
 
-  let yPos = addProfessionalHeader(
-    doc,
-    companyDetails,
-    'Quotation',
-    quotation.quotation_number,
-    new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-    new Date(quotation.event_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-    validUntil.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-  );
+    const validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + (quotation.validity_days || 7));
 
-  yPos = addClientSection(doc, quotation, yPos);
+    let yPos = addProfessionalHeader(
+      doc,
+      companyDetails,
+      'Quotation',
+      quotation.quotation_number || 'N/A',
+      new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      new Date(quotation.event_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      validUntil.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    );
 
-  yPos += 5;
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(128, 0, 32);
-  doc.text('Items & Services', 20, yPos);
-  yPos += 5;
+    yPos = addClientSection(doc, quotation, yPos);
 
-  yPos = addItemsTable(doc, quotation.items, yPos);
+    if (quotation.items && quotation.items.length > 0) {
+      yPos += 5;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(128, 0, 32);
+      doc.text('Items & Services', 20, yPos);
+      yPos += 5;
 
-  if (quotation.remarks) {
+      yPos = addItemsTable(doc, quotation.items, yPos);
+    } else {
+      yPos += 10;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      doc.text('No items added yet', 20, yPos);
+    }
+
+    if (quotation.remarks) {
+      yPos += 10;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(128, 0, 32);
+      doc.text('Remarks:', 20, yPos);
+      yPos += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      const remarksLines = doc.splitTextToSize(quotation.remarks, 110);
+      doc.text(remarksLines, 20, yPos);
+    }
+
+    yPos = addPricingSummary(doc, quotation, yPos);
+
     yPos += 10;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(128, 0, 32);
-    doc.text('Remarks:', 20, yPos);
-    yPos += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
-    const remarksLines = doc.splitTextToSize(quotation.remarks, 110);
-    doc.text(remarksLines, 20, yPos);
+    addFooter(doc, companyDetails, quotation.terms_and_conditions || DEFAULT_TERMS, yPos);
+
+    const filename = `Quotation_${quotation.quotation_number || 'Draft'}_${(quotation.client_name || 'Client').replace(/\s+/g, '_')}.pdf`;
+    doc.save(filename);
+
+    console.log('PDF saved successfully:', filename);
+  } catch (error) {
+    console.error('Critical error in PDF generation:', error);
+    throw new Error('Failed to generate PDF. Please check the data and try again.');
   }
-
-  yPos = addPricingSummary(doc, quotation, yPos);
-
-  yPos += 10;
-  addFooter(doc, companyDetails, quotation.terms_and_conditions || DEFAULT_TERMS, yPos);
-
-  const filename = `Quotation_${quotation.quotation_number}_${quotation.client_name.replace(/\s+/g, '_')}.pdf`;
-  doc.save(filename);
 }
 
 interface PackageItem {
@@ -545,15 +560,16 @@ interface PackageData {
 }
 
 export async function generatePackagePDF(packageData: PackageData) {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...packageData.company_details };
-
   try {
-    await addLogoToPDF(doc, 20, 15);
-  } catch (error) {
-    console.error('Error loading logo:', error);
-  }
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...packageData.company_details };
+
+    try {
+      await addLogoToPDF(doc, 20, 15);
+    } catch (error) {
+      console.warn('Error loading logo, continuing without logo:', error);
+    }
 
   let yPos = addProfessionalHeader(
     doc,
@@ -751,6 +767,12 @@ export async function generatePackagePDF(packageData: PackageData) {
     { align: 'center' }
   );
 
-  const filename = `Package_${packageData.name.replace(/\s+/g, '_')}.pdf`;
-  doc.save(filename);
+    const filename = `Package_${(packageData.name || 'Package').replace(/\s+/g, '_')}.pdf`;
+    doc.save(filename);
+
+    console.log('Package PDF saved successfully:', filename);
+  } catch (error) {
+    console.error('Critical error in package PDF generation:', error);
+    throw new Error('Failed to generate package PDF. Please check the data and try again.');
+  }
 }

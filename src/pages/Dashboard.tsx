@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash2, Plus, Download } from 'lucide-react';
+import { FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash2, Plus, Download, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { AdminLayout } from '../components/AdminLayout';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -34,6 +34,7 @@ export function Dashboard() {
   });
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingPDF, setDownloadingPDF] = useState<string | null>(null);
   const [previewQuotationId, setPreviewQuotationId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function Dashboard() {
   };
 
   const handleDownloadPDF = async (id: string) => {
+    setDownloadingPDF(id);
     try {
       const { data: quotation, error: quotationError } = await supabase
         .from('quotations')
@@ -91,7 +93,14 @@ export function Dashboard() {
         .eq('id', id)
         .single();
 
-      if (quotationError) throw quotationError;
+      if (quotationError) {
+        console.error('Quotation error:', quotationError);
+        throw new Error('Failed to fetch quotation details');
+      }
+
+      if (!quotation) {
+        throw new Error('Quotation not found');
+      }
 
       const { data: items, error: itemsError } = await supabase
         .from('quotation_items')
@@ -99,15 +108,25 @@ export function Dashboard() {
         .eq('quotation_id', id)
         .order('sort_order');
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Items error:', itemsError);
+        throw new Error('Failed to fetch quotation items');
+      }
+
+      console.log('Generating PDF with data:', { quotation, items });
 
       await generateQuotationPDF({
         ...quotation,
         items: items || [],
       });
+
+      console.log('PDF generated successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDF';
+      alert(errorMessage);
+    } finally {
+      setDownloadingPDF(null);
     }
   };
 
@@ -262,10 +281,15 @@ export function Dashboard() {
                           </Link>
                           <button
                             onClick={() => handleDownloadPDF(quotation.id)}
-                            className="text-green-600 hover:text-green-700"
+                            className="text-green-600 hover:text-green-700 disabled:opacity-50"
                             title="Download PDF"
+                            disabled={downloadingPDF === quotation.id}
                           >
-                            <Download className="w-4 h-4" />
+                            {downloadingPDF === quotation.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
                           </button>
                           <button
                             onClick={() => handleDelete(quotation.id)}
@@ -333,10 +357,15 @@ export function Dashboard() {
                       </Link>
                       <button
                         onClick={() => handleDownloadPDF(quotation.id)}
-                        className="text-green-600 hover:text-green-700 p-2"
+                        className="text-green-600 hover:text-green-700 p-2 disabled:opacity-50"
                         title="Download PDF"
+                        disabled={downloadingPDF === quotation.id}
                       >
-                        <Download className="w-5 h-5" />
+                        {downloadingPDF === quotation.id ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Download className="w-5 h-5" />
+                        )}
                       </button>
                       <button
                         onClick={() => handleDelete(quotation.id)}
