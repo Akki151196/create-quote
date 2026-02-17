@@ -212,24 +212,24 @@ function addProfessionalHeader(
   doc.setFillColor(123, 0, 0);
   doc.rect(0, 0, pageWidth, 10, 'F');
 
-  yPos = 30;
+  yPos = 25;
 
   const logoSize = 28;
   const logoX = 25;
 
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(123, 0, 0);
-  const companyNameLines = doc.splitTextToSize(sanitizeText(companyDetails.name), 100);
+  const companyNameLines = doc.splitTextToSize(sanitizeText(companyDetails.name), 85);
   doc.text(companyNameLines, logoX + logoSize + 5, yPos);
 
-  const nameHeight = companyNameLines.length * 5;
-  doc.setFontSize(8);
+  const nameHeight = companyNameLines.length * 5.5;
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 100);
   doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + nameHeight + 2);
 
-  yPos += nameHeight + 8;
+  yPos = Math.max(yPos + nameHeight + 10, 48);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
@@ -255,40 +255,43 @@ function addProfessionalHeader(
     yPos += 4;
   }
 
-  const rightColX = pageWidth - 65;
-  let rightYPos = 25;
+  const rightColX = pageWidth - 60;
+  let rightYPos = 20;
 
+  const boxHeight = validUntil ? 42 : 34;
   doc.setFillColor(248, 248, 252);
-  doc.roundedRect(rightColX - 5, rightYPos - 5, 60, validUntil ? 40 : 32, 3, 3, 'F');
+  doc.roundedRect(rightColX - 5, rightYPos - 3, 55, boxHeight, 3, 3, 'F');
   doc.setDrawColor(220, 220, 225);
   doc.setLineWidth(0.3);
-  doc.roundedRect(rightColX - 5, rightYPos - 5, 60, validUntil ? 40 : 32, 3, 3, 'S');
+  doc.roundedRect(rightColX - 5, rightYPos - 3, 55, boxHeight, 3, 3, 'S');
 
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(123, 0, 0);
-  doc.text(documentType.toUpperCase(), rightColX, rightYPos);
+  doc.text(documentType.toUpperCase(), rightColX, rightYPos + 4);
 
-  rightYPos += 8;
-  doc.setFontSize(8.5);
+  rightYPos += 11;
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(40, 40, 40);
   doc.text('Number:', rightColX, rightYPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(sanitizeText(documentNumber), rightColX + 20, rightYPos);
+  const numberText = doc.splitTextToSize(sanitizeText(documentNumber), 28);
+  doc.text(numberText, rightColX + 18, rightYPos);
 
   rightYPos += 5.5;
   doc.setFont('helvetica', 'bold');
   doc.text('Date:', rightColX, rightYPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(sanitizeText(documentDate), rightColX + 20, rightYPos);
+  doc.text(sanitizeText(documentDate), rightColX + 18, rightYPos);
 
   if (eventDate) {
     rightYPos += 5.5;
     doc.setFont('helvetica', 'bold');
     doc.text('Event Date:', rightColX, rightYPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(sanitizeText(eventDate), rightColX + 20, rightYPos);
+    const eventDateText = doc.splitTextToSize(sanitizeText(eventDate), 28);
+    doc.text(eventDateText, rightColX + 18, rightYPos);
   }
 
   if (validUntil) {
@@ -296,10 +299,10 @@ function addProfessionalHeader(
     doc.setFont('helvetica', 'bold');
     doc.text('Valid Until:', rightColX, rightYPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(sanitizeText(validUntil), rightColX + 20, rightYPos);
+    doc.text(sanitizeText(validUntil), rightColX + 18, rightYPos);
   }
 
-  return Math.max(yPos, rightYPos) + 10;
+  return Math.max(yPos, rightYPos + 8) + 8;
 }
 
 function addClientSection(doc: jsPDF, quotation: QuotationData, yPos: number): number {
@@ -420,24 +423,29 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
 
 function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const summaryWidth = 120;
+  const summaryWidth = 85;
   const summaryX = pageWidth - 30 - summaryWidth;
-  let currentY = yPos + 12;
+  let currentY = yPos + 10;
+
+  const totalRowsNeeded = 4 +
+    (quotation.discount_amount > 0 ? 1 : 0) +
+    (quotation.service_charges > 0 ? 1 : 0) +
+    (quotation.external_charges > 0 ? 1 : 0);
+  const summaryHeight = (totalRowsNeeded * 7) + 40 + (quotation.advance_paid ? 16 : 0);
 
   doc.setFillColor(250, 251, 253);
-  const summaryHeight = 75 + (quotation.advance_paid ? 18 : 0);
   doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 4, 4, 'F');
   doc.setDrawColor(210, 215, 225);
   doc.setLineWidth(0.5);
   doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 4, 4, 'S');
 
-  currentY += 12;
-  doc.setFontSize(9);
+  currentY += 10;
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(40, 40, 40);
 
-  const labelX = summaryX + 14;
-  const valueX = summaryX + summaryWidth - 14;
+  const labelX = summaryX + 8;
+  const valueX = summaryX + summaryWidth - 8;
 
   doc.text('Subtotal:', labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
@@ -466,43 +474,43 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.text(`Tax (GST ${quotation.tax_percentage}%):`, labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.tax_amount)}`, valueX, currentY, { align: 'right' });
 
-  currentY += 11;
+  currentY += 10;
   doc.setDrawColor(123, 0, 0);
-  doc.setLineWidth(1.5);
-  doc.line(labelX, currentY - 3, valueX, currentY - 3);
+  doc.setLineWidth(1);
+  doc.line(labelX, currentY, valueX, currentY);
 
+  currentY += 3;
   doc.setFillColor(123, 0, 0);
-  doc.rect(summaryX, currentY + 1, summaryWidth, 16, 'F');
+  doc.rect(summaryX, currentY, summaryWidth, 18, 'F');
 
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
   doc.text('GRAND TOTAL:', labelX, currentY + 11);
   doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY + 11, { align: 'right' });
 
+  currentY += 18;
+
   if (quotation.advance_paid) {
-    currentY += 22;
     doc.setFillColor(240, 253, 244);
-    doc.rect(summaryX, currentY, summaryWidth, 7, 'F');
-    doc.setFontSize(9);
+    doc.rect(summaryX, currentY, summaryWidth, 8, 'F');
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(22, 163, 74);
-    doc.text('Advance Paid:', labelX, currentY + 5);
-    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY + 5, { align: 'right' });
+    doc.text('Advance Paid:', labelX, currentY + 5.5);
+    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY + 5.5, { align: 'right' });
 
-    currentY += 7;
+    currentY += 8;
     doc.setFillColor(254, 242, 242);
-    doc.rect(summaryX, currentY, summaryWidth, 7, 'F');
+    doc.rect(summaryX, currentY, summaryWidth, 8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(220, 38, 38);
-    doc.text('Balance Due:', labelX, currentY + 5);
-    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 5, { align: 'right' });
-    currentY += 7;
-  } else {
-    currentY += 16;
+    doc.text('Balance Due:', labelX, currentY + 5.5);
+    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 5.5, { align: 'right' });
+    currentY += 8;
   }
 
-  return currentY + 12;
+  return currentY + 10;
 }
 
 function addFooter(doc: jsPDF, companyDetails: any, terms: string, yPos: number): void {
