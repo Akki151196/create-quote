@@ -13,8 +13,11 @@ export function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 pb-safe">
-      <div className="flex items-center justify-around h-16">
+    <nav
+      className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+    >
+      <div className="flex items-center justify-around" style={{ minHeight: '60px' }}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path ||
@@ -24,21 +27,24 @@ export function BottomNav() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center flex-1 h-full min-h-[48px] transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center flex-1 h-full touch-manipulation active:scale-95 transition-all duration-200 relative ${
                 isActive
-                  ? 'text-red-900'
+                  ? 'text-maroon-800'
                   : 'text-gray-500 active:text-gray-700'
               }`}
+              style={{ minHeight: '56px', minWidth: '60px' }}
             >
-              <Icon
-                className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span className={`text-[10px] mt-0.5 ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                {item.label}
-              </span>
+              <div className={`flex flex-col items-center gap-1 ${isActive ? 'transform scale-105' : ''}`}>
+                <Icon
+                  className={`w-6 h-6 transition-all duration-200 ${isActive ? 'text-maroon-700' : ''}`}
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
+                <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>
+                  {item.label}
+                </span>
+              </div>
               {isActive && (
-                <div className="absolute bottom-0 w-8 h-0.5 bg-red-900 rounded-full" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-maroon-700 rounded-full" />
               )}
             </Link>
           );

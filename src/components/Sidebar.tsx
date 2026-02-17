@@ -1,6 +1,7 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, Menu, X, ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const menuItems = [
   { path: '/admin', icon: Home, label: 'Dashboard' },
@@ -23,6 +24,8 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
@@ -41,11 +44,21 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     };
   }, [isMobileMenuOpen]);
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <>
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-all duration-300 hover:scale-110"
+        className="lg:hidden fixed top-2 left-2 z-50 w-12 h-12 flex items-center justify-center bg-white rounded-xl shadow-lg hover:bg-gray-50 transition-all duration-300 active:scale-95 touch-manipulation"
+        style={{ minWidth: '48px', minHeight: '48px' }}
         aria-label="Toggle menu"
       >
         {isMobileMenuOpen ? (
@@ -69,8 +82,9 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           transition-all duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isCollapsed ? 'lg:w-[70px]' : 'lg:w-64'}
-          w-64
+          w-72
         `}
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className={`border-b border-gray-200 transition-all duration-300 ${isCollapsed ? 'lg:p-3' : 'p-6'}`}>
           <Link to="/admin" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:gap-0' : 'gap-3'}`}>
@@ -86,6 +100,18 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           </Link>
         </div>
 
+        <div className={`border-b border-gray-200 transition-all duration-300 ${isCollapsed ? 'lg:p-2' : 'p-4'}`}>
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'lg:justify-center' : ''}`}>
+            <div className="w-10 h-10 rounded-full bg-maroon-100 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-maroon-700" />
+            </div>
+            <div className={`flex-1 min-w-0 ${isCollapsed ? 'lg:hidden' : 'block'}`}>
+              <p className="text-sm font-medium text-gray-900 truncate">Admin</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden lg:flex absolute -right-3 top-20 bg-maroon-700 text-white p-1.5 rounded-full shadow-lg hover:bg-maroon-800 transition-all duration-300 hover:scale-110 z-50"
@@ -99,7 +125,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </button>
 
         <nav className="flex-1 p-4 overflow-y-auto">
-          <ul className="space-y-2">
+          <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -114,13 +140,14 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 >
                   <Link
                     to={item.path}
-                    className={`flex items-center rounded-lg transition-all duration-200 ${
-                      isCollapsed ? 'lg:justify-center lg:px-3 lg:py-3' : 'gap-3 px-4 py-3'
+                    className={`flex items-center rounded-xl transition-all duration-200 touch-manipulation active:scale-95 ${
+                      isCollapsed ? 'lg:justify-center lg:px-3 lg:py-3' : 'gap-3 px-4 py-3.5'
                     } ${
                       isActive
                         ? 'bg-maroon-700 text-white shadow-md'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    style={{ minHeight: '48px' }}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0 transition-transform duration-200" />
                     <span className={`font-medium text-sm transition-all duration-300 whitespace-nowrap ${isCollapsed ? 'lg:hidden' : 'block'}`}>
@@ -141,6 +168,21 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             })}
           </ul>
         </nav>
+
+        <div className={`border-t border-gray-200 transition-all duration-300 ${isCollapsed ? 'lg:p-2' : 'p-4'}`}>
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 touch-manipulation active:scale-95 ${
+              isCollapsed ? 'lg:justify-center lg:px-3 lg:py-3' : 'px-4 py-3.5'
+            }`}
+            style={{ minHeight: '52px' }}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className={`font-medium text-sm ${isCollapsed ? 'lg:hidden' : 'block'}`}>
+              Logout
+            </span>
+          </button>
+        </div>
       </aside>
     </>
   );
