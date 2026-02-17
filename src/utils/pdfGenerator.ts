@@ -91,18 +91,43 @@ function formatCurrency(value: number | string): string {
 }
 
 async function addLogoToPDF(doc: jsPDF, xPos: number, yPos: number): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Logo loading timed out'));
+    }, 3000);
+
     img.onload = function() {
-      const imgWidth = 25;
-      const imgHeight = 25;
-      doc.addImage(img, 'PNG', xPos, yPos, imgWidth, imgHeight);
-      resolve();
+      clearTimeout(timeoutId);
+      try {
+        if (!img.complete || !img.naturalWidth) {
+          reject(new Error('Image failed to load properly'));
+          return;
+        }
+        const imgWidth = 25;
+        const imgHeight = 25;
+        doc.addImage(img, 'PNG', xPos, yPos, imgWidth, imgHeight);
+        resolve();
+      } catch (error) {
+        console.warn('Failed to add image to PDF:', error);
+        reject(error);
+      }
     };
-    img.onerror = function() {
-      resolve();
+
+    img.onerror = function(error) {
+      clearTimeout(timeoutId);
+      console.warn('Failed to load logo image:', error);
+      reject(new Error('Logo image failed to load'));
     };
-    img.src = '/xraakgc9_img_0167-removebg-preview.png';
+
+    try {
+      img.src = '/xraakgc9_img_0167-removebg-preview.png';
+    } catch (error) {
+      clearTimeout(timeoutId);
+      reject(error);
+    }
   });
 }
 
