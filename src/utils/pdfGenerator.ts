@@ -212,17 +212,17 @@ function addProfessionalHeader(
   const logoSize = 28;
   const logoX = 15;
 
-  doc.setFontSize(20);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(128, 0, 32);
-  doc.text(companyDetails.name, logoX + logoSize + 5, yPos, { maxWidth: 100 });
+  doc.text(companyDetails.name, logoX + logoSize + 5, yPos);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 100);
-  doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + 5);
+  doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + 6);
 
-  yPos += 12;
+  yPos += 14;
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
@@ -249,7 +249,7 @@ function addProfessionalHeader(
   }
 
   const rightColX = pageWidth - 60;
-  let rightYPos = 20;
+  let rightYPos = 23;
 
   doc.setFillColor(240, 240, 245);
   doc.roundedRect(rightColX - 5, rightYPos - 5, 55, validUntil ? 38 : 30, 2, 2, 'F');
@@ -383,12 +383,12 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
     },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 38 },
-      2: { cellWidth: 20 },
-      3: { cellWidth: 46 },
+      1: { cellWidth: 36 },
+      2: { cellWidth: 18 },
+      3: { cellWidth: 44 },
       4: { cellWidth: 15, halign: 'center' },
       5: { cellWidth: 30, halign: 'right' },
-      6: { cellWidth: 38, halign: 'right', fontStyle: 'bold' }
+      6: { cellWidth: 44, halign: 'right', fontStyle: 'bold' }
     },
     margin: { left: 20, right: 20 },
     styles: {
@@ -403,7 +403,7 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
 
 function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const summaryWidth = 105;
+  const summaryWidth = 110;
   const summaryX = pageWidth - 25 - summaryWidth;
   let currentY = yPos + 10;
 
@@ -419,8 +419,8 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
 
-  const labelX = summaryX + 10;
-  const valueX = summaryX + summaryWidth - 10;
+  const labelX = summaryX + 12;
+  const valueX = summaryX + summaryWidth - 12;
 
   doc.text('Subtotal:', labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
