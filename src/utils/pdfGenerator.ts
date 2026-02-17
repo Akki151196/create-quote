@@ -431,7 +431,7 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
     (quotation.discount_amount > 0 ? 1 : 0) +
     (quotation.service_charges > 0 ? 1 : 0) +
     (quotation.external_charges > 0 ? 1 : 0);
-  const summaryHeight = (totalRowsNeeded * 7) + 40 + (quotation.advance_paid ? 22 : 0);
+  const summaryHeight = (totalRowsNeeded * 7) + 40 + (quotation.advance_paid ? 26 : 0);
 
   doc.setFillColor(250, 251, 253);
   doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 4, 4, 'F');
@@ -492,23 +492,23 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   currentY += 18;
 
   if (quotation.advance_paid) {
-    currentY += 2;
+    currentY += 3;
     doc.setFillColor(240, 253, 244);
-    doc.rect(summaryX, currentY, summaryWidth, 9, 'F');
+    doc.rect(summaryX, currentY, summaryWidth, 10, 'F');
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(22, 163, 74);
-    doc.text('Advance Paid:', labelX, currentY + 6);
-    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY + 6, { align: 'right' });
+    doc.text('Advance Paid:', labelX, currentY + 6.5);
+    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY + 6.5, { align: 'right' });
 
-    currentY += 9;
+    currentY += 10;
     doc.setFillColor(254, 242, 242);
-    doc.rect(summaryX, currentY, summaryWidth, 9, 'F');
+    doc.rect(summaryX, currentY, summaryWidth, 10, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(220, 38, 38);
-    doc.text('Balance Due:', labelX, currentY + 6);
-    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 6, { align: 'right' });
-    currentY += 9;
+    doc.text('Balance Due:', labelX, currentY + 6.5);
+    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 6.5, { align: 'right' });
+    currentY += 10;
   }
 
   return currentY + 10;
