@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, X, ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
+import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, X, ChevronLeft, ChevronRight, LogOut, User, UtensilsCrossed } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -81,14 +81,13 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 lg:py-5">
           <Link
             to="/admin"
-            className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:w-full lg:gap-0' : ''}`}
+            className={`flex items-center gap-3 transition-all duration-300 min-w-0 ${isCollapsed ? 'lg:justify-center lg:w-full lg:gap-0' : ''}`}
           >
-            <div className={`flex-shrink-0 bg-maroon-700 rounded-full overflow-hidden ${isCollapsed ? 'lg:w-9 lg:h-9' : 'w-10 h-10'}`}>
-              <img
-                src="/xraakgc9_img_0167-removebg-preview.png"
-                alt="Royal Catering"
-                className="w-full h-full object-cover p-1.5"
-              />
+            <div
+              className="flex-shrink-0 bg-maroon-700 rounded-xl flex items-center justify-center"
+              style={{ width: '36px', height: '36px', minWidth: '36px' }}
+            >
+              <UtensilsCrossed className="w-5 h-5 text-white" />
             </div>
             <div className={`${isCollapsed ? 'lg:hidden' : 'block'}`}>
               <h2 className="font-bold text-gray-900 text-sm leading-tight">Royal Catering</h2>
@@ -97,7 +96,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           </Link>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors touch-manipulation active:scale-95"
+            className="lg:hidden flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors touch-manipulation active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
