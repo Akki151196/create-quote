@@ -148,38 +148,38 @@ function addProfessionalHeader(
 
   yPos = 20;
 
-  doc.setFontSize(22);
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(128, 0, 32);
-  doc.text(companyDetails.name, 50, yPos);
+  doc.text(companyDetails.name, 15, yPos, { maxWidth: 120 });
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text('Making Your Events Memorable', 50, yPos + 5);
+  doc.text('Making Your Events Memorable', 15, yPos + 5);
 
   yPos += 12;
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 60);
 
   if (companyDetails.address) {
-    doc.text(companyDetails.address, 50, yPos);
+    doc.text(companyDetails.address, 15, yPos);
     yPos += 4;
   }
   if (companyDetails.phone) {
-    doc.text(`Phone: ${companyDetails.phone}`, 50, yPos);
+    doc.text(`Phone: ${companyDetails.phone}`, 15, yPos);
     yPos += 4;
   }
   if (companyDetails.email) {
-    doc.text(`Email: ${companyDetails.email}`, 50, yPos);
+    doc.text(`Email: ${companyDetails.email}`, 15, yPos);
     yPos += 4;
   }
   if (companyDetails.gstin) {
-    doc.text(`GSTIN: ${companyDetails.gstin}`, 50, yPos);
+    doc.text(`GSTIN: ${companyDetails.gstin}`, 15, yPos);
     yPos += 4;
   }
   if (companyDetails.website) {
-    doc.text(`Website: ${companyDetails.website}`, 50, yPos);
+    doc.text(`Website: ${companyDetails.website}`, 15, yPos);
     yPos += 4;
   }
 
@@ -493,12 +493,6 @@ export async function generateQuotationPDF(quotation: QuotationData) {
     const doc = new jsPDF();
     const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
 
-    try {
-      await addLogoToPDF(doc, 20, 15);
-    } catch (error) {
-      console.warn('Error loading logo, continuing without logo:', error);
-    }
-
     const validUntil = new Date();
     validUntil.setDate(validUntil.getDate() + (quotation.validity_days || 7));
 
@@ -590,13 +584,7 @@ export async function generatePackagePDF(packageData: PackageData) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...packageData.company_details };
 
-    try {
-      await addLogoToPDF(doc, 20, 15);
-    } catch (error) {
-      console.warn('Error loading logo, continuing without logo:', error);
-    }
-
-  let yPos = addProfessionalHeader(
+    let yPos = addProfessionalHeader(
     doc,
     companyDetails,
     'Package',

@@ -42,6 +42,8 @@ export function QuotationForm() {
     terms_and_conditions: 'Payment terms: 50% advance at booking, 50% before event. Cancellation policy: Non-refundable after 7 days of booking.',
     status: 'draft',
     approval_status: 'draft',
+    advance_paid: 0,
+    payment_status: 'pending' as 'pending' | 'partial' | 'paid',
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -109,6 +111,8 @@ export function QuotationForm() {
         terms_and_conditions: quotation.terms_and_conditions || '',
         status: quotation.status,
         approval_status: quotation.approval_status || 'draft',
+        advance_paid: quotation.advance_paid || 0,
+        payment_status: quotation.payment_status || 'pending',
       });
 
       const { data: items, error: itemsError } = await supabase
@@ -167,6 +171,8 @@ export function QuotationForm() {
     const taxAmount = (subtotalWithCharges * formData.tax_percentage) / 100;
     const grandTotal = subtotalWithCharges + taxAmount;
     const totalCharges = subtotal + serviceCharges + externalCharges;
+    const advancePaid = parseFloat(formData.advance_paid.toString()) || 0;
+    const balanceDue = grandTotal - advancePaid;
 
     return {
       subtotal,
@@ -176,6 +182,8 @@ export function QuotationForm() {
       totalCharges,
       taxAmount,
       grandTotal,
+      advancePaid,
+      balanceDue,
     };
   };
 
@@ -191,6 +199,13 @@ export function QuotationForm() {
 
     try {
       const totals = calculateTotals();
+
+      let paymentStatus: 'pending' | 'partial' | 'paid' = 'pending';
+      if (totals.advancePaid >= totals.grandTotal) {
+        paymentStatus = 'paid';
+      } else if (totals.advancePaid > 0) {
+        paymentStatus = 'partial';
+      }
 
       const baseQuotationData = {
         quotation_number: formData.quotation_number,
@@ -211,6 +226,9 @@ export function QuotationForm() {
         external_charges: totals.externalCharges,
         total_charges: totals.totalCharges,
         grand_total: totals.grandTotal,
+        advance_paid: totals.advancePaid,
+        balance_due: totals.balanceDue,
+        payment_status: paymentStatus,
         validity_days: formData.validity_days,
         remarks: formData.remarks || null,
         status: formData.status,
@@ -698,6 +716,51 @@ export function QuotationForm() {
                       ₹{totals.grandTotal.toLocaleString('en-IN')}
                     </span>
                   </div>
+                </div>
+
+                <div className="border-t pt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Advance Payment Received (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.advance_paid}
+                      onChange={(e) => setFormData({ ...formData, advance_paid: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
+                      min="0"
+                      max={totals.grandTotal}
+                      step="0.01"
+                    />
+                  </div>
+                  {totals.advancePaid > 0 && (
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm text-green-700">Advance Paid:</span>
+                        <span className="text-sm font-semibold text-green-700">
+                          ₹{totals.advancePaid.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-bold text-red-700">Balance Due:</span>
+                        <span className="text-sm font-bold text-red-700">
+                          ₹{totals.balanceDue.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-green-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-600">Payment Status:</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            totals.advancePaid >= totals.grandTotal
+                              ? 'bg-green-200 text-green-800'
+                              : 'bg-yellow-200 text-yellow-800'
+                          }`}>
+                            {totals.advancePaid >= totals.grandTotal ? 'Paid' : 'Partial Payment'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
