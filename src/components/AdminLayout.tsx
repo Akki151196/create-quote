@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, LogOut } from 'lucide-react';
+import { Home, LogOut, Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,14 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, title, showHomeButton = false }: AdminLayoutProps) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isCollapsed));
+  }, [isCollapsed]);
 
   const handleLogout = async () => {
     try {
@@ -26,13 +34,20 @@ export function AdminLayout({ children, title, showHomeButton = false }: AdminLa
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      <Sidebar />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
       <div className="flex-1 flex flex-col lg:ml-0">
         <header className="bg-gradient-to-r from-maroon-800 to-maroon-950 shadow-lg sticky top-0 z-30">
           <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 lg:gap-4 ml-14 lg:ml-0">
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="hidden lg:flex text-white hover:text-maroon-200 transition-colors p-1 hover:bg-white/10 rounded-lg"
+                  aria-label="Toggle sidebar"
+                >
+                  <Menu className="w-6 h-6" />
+                </button>
                 {showHomeButton && (
                   <Link to="/admin" className="text-white hover:text-maroon-200 transition-colors">
                     <Home className="w-5 h-5 lg:w-6 lg:h-6" />

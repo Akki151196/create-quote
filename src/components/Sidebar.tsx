@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, Menu, X } from 'lucide-react';
+import { Home, FileText, Book, List, Package, Users, Calendar as CalendarIcon, CreditCard, Receipt, BarChart3, Settings as SettingsIcon, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const menuItems = [
@@ -16,9 +16,15 @@ const menuItems = [
   { path: '/admin/settings', icon: SettingsIcon, label: 'Settings' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (value: boolean) => void;
+}
+
+export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -56,45 +62,80 @@ export function Sidebar() {
         onClick={() => setIsMobileMenuOpen(false)}
       />
 
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-40
-        w-64 bg-white shadow-lg min-h-screen flex flex-col
-        transform transition-all duration-300 ease-in-out
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="p-6 border-b border-gray-200">
-          <Link to="/admin" className="flex items-center gap-3">
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40
+          bg-white shadow-lg min-h-screen flex flex-col
+          transition-all duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isCollapsed ? 'lg:w-[70px]' : 'lg:w-64'}
+          w-64
+        `}
+      >
+        <div className={`border-b border-gray-200 transition-all duration-300 ${isCollapsed ? 'lg:p-3' : 'p-6'}`}>
+          <Link to="/admin" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:gap-0' : 'gap-3'}`}>
             <img
               src="/xraakgc9_img_0167-removebg-preview.png"
               alt="Royal Catering"
-              className="h-12 w-12 bg-maroon-700 rounded-full p-2"
+              className={`bg-maroon-700 rounded-full p-2 transition-all duration-300 ${isCollapsed ? 'lg:h-10 lg:w-10' : 'h-12 w-12'}`}
             />
-            <div>
+            <div className={`transition-all duration-300 ${isCollapsed ? 'lg:hidden' : 'block'}`}>
               <h2 className="font-bold text-gray-800 text-sm">Royal Catering</h2>
               <p className="text-xs text-gray-500">Admin Panel</p>
             </div>
           </Link>
         </div>
 
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:flex absolute -right-3 top-20 bg-maroon-700 text-white p-1.5 rounded-full shadow-lg hover:bg-maroon-800 transition-all duration-300 hover:scale-110 z-50"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <ChevronLeft className="w-4 h-4" />
+          )}
+        </button>
+
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
+              const isHovered = hoveredItem === item.path;
 
               return (
-                <li key={item.path}>
+                <li
+                  key={item.path}
+                  className="relative"
+                  onMouseEnter={() => setHoveredItem(item.path)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center rounded-lg transition-all duration-200 ${
+                      isCollapsed ? 'lg:justify-center lg:px-3 lg:py-3' : 'gap-3 px-4 py-3'
+                    } ${
                       isActive
-                        ? 'bg-maroon-700 text-white shadow-md transform scale-105'
-                        : 'text-gray-700 hover:bg-gray-100 hover:transform hover:scale-102'
+                        ? 'bg-maroon-700 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <Icon className="w-5 h-5 transition-transform duration-200" />
-                    <span className="font-medium text-sm">{item.label}</span>
+                    <Icon className="w-5 h-5 flex-shrink-0 transition-transform duration-200" />
+                    <span className={`font-medium text-sm transition-all duration-300 whitespace-nowrap ${isCollapsed ? 'lg:hidden' : 'block'}`}>
+                      {item.label}
+                    </span>
                   </Link>
+
+                  {isCollapsed && isHovered && (
+                    <div className="hidden lg:block absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                      <div className="bg-gray-900 text-white text-sm px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                        {item.label}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                      </div>
+                    </div>
+                  )}
                 </li>
               );
             })}
