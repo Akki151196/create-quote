@@ -387,6 +387,7 @@ export function Dashboard() {
         <QuotationPreviewModal
           quotationId={previewQuotationId}
           onClose={() => setPreviewQuotationId(null)}
+          onStatusChange={loadData}
         />
       )}
     </AdminLayout>

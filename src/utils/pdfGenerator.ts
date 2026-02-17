@@ -131,6 +131,32 @@ async function addLogoToPDF(doc: jsPDF, xPos: number, yPos: number): Promise<voi
   });
 }
 
+async function addLogoToHeader(doc: jsPDF, xPos: number, yPos: number, size: number): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      try {
+        doc.addImage(img, 'PNG', xPos, yPos, size, size);
+        resolve();
+      } catch (error) {
+        console.warn('Error adding logo:', error);
+        resolve();
+      }
+    };
+
+    img.onerror = () => {
+      console.warn('Logo load failed');
+      resolve();
+    };
+
+    img.src = '/Gemini_Generated_Image_ui2uh7ui2uh7ui2u-removebg-preview.png';
+
+    setTimeout(() => resolve(), 2000);
+  });
+}
+
 function addProfessionalHeader(
   doc: jsPDF,
   companyDetails: any,
@@ -146,41 +172,45 @@ function addProfessionalHeader(
   doc.setFillColor(128, 0, 32);
   doc.rect(0, 0, pageWidth, 8, 'F');
 
-  yPos = 20;
+  yPos = 25;
 
-  doc.setFontSize(18);
+  const logoSize = 22;
+  const logoX = 15;
+
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(128, 0, 32);
-  doc.text(companyDetails.name, 15, yPos, { maxWidth: 120 });
+  doc.text(companyDetails.name, logoX + logoSize + 5, yPos, { maxWidth: 100 });
 
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 100);
-  doc.text('Making Your Events Memorable', 15, yPos + 5);
+  doc.text('Making Your Events Memorable', logoX + logoSize + 5, yPos + 5);
 
   yPos += 12;
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
 
   if (companyDetails.address) {
-    doc.text(companyDetails.address, 15, yPos);
-    yPos += 4;
+    doc.text(companyDetails.address, logoX + logoSize + 5, yPos);
+    yPos += 3.5;
   }
   if (companyDetails.phone) {
-    doc.text(`Phone: ${companyDetails.phone}`, 15, yPos);
-    yPos += 4;
+    doc.text(`Phone: ${companyDetails.phone}`, logoX + logoSize + 5, yPos);
+    yPos += 3.5;
   }
   if (companyDetails.email) {
-    doc.text(`Email: ${companyDetails.email}`, 15, yPos);
-    yPos += 4;
+    doc.text(`Email: ${companyDetails.email}`, logoX + logoSize + 5, yPos);
+    yPos += 3.5;
   }
   if (companyDetails.gstin) {
-    doc.text(`GSTIN: ${companyDetails.gstin}`, 15, yPos);
-    yPos += 4;
+    doc.text(`GSTIN: ${companyDetails.gstin}`, logoX + logoSize + 5, yPos);
+    yPos += 3.5;
   }
   if (companyDetails.website) {
-    doc.text(`Website: ${companyDetails.website}`, 15, yPos);
-    yPos += 4;
+    doc.text(`Website: ${companyDetails.website}`, logoX + logoSize + 5, yPos);
+    yPos += 3.5;
   }
 
   const rightColX = pageWidth - 60;
@@ -338,24 +368,24 @@ function addItemsTable(doc: jsPDF, items: LineItem[], yPos: number): number {
 
 function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const summaryWidth = 75;
-  const summaryX = pageWidth - 20 - summaryWidth;
+  const summaryWidth = 95;
+  const summaryX = pageWidth - 25 - summaryWidth;
   let currentY = yPos + 10;
 
-  doc.setFillColor(245, 248, 250);
-  const summaryHeight = 60 + (quotation.advance_paid ? 10 : 0);
-  doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 2, 2, 'F');
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 2, 2, 'S');
+  doc.setFillColor(248, 250, 252);
+  const summaryHeight = 70 + (quotation.advance_paid ? 16 : 0);
+  doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 3, 3, 'F');
+  doc.setDrawColor(200, 210, 220);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 3, 3, 'S');
 
-  currentY += 8;
+  currentY += 10;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
 
-  const labelX = summaryX + 5;
-  const valueX = summaryX + summaryWidth - 5;
+  const labelX = summaryX + 8;
+  const valueX = summaryX + summaryWidth - 8;
 
   doc.text('Subtotal:', labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.subtotal)}`, valueX, currentY, { align: 'right' });
@@ -384,30 +414,40 @@ function addPricingSummary(doc: jsPDF, quotation: QuotationData, yPos: number): 
   doc.text(`Tax (GST ${quotation.tax_percentage}%):`, labelX, currentY);
   doc.text(`Rs. ${formatCurrency(quotation.tax_amount)}`, valueX, currentY, { align: 'right' });
 
-  currentY += 8;
+  currentY += 10;
   doc.setDrawColor(128, 0, 32);
-  doc.setLineWidth(0.5);
-  doc.line(labelX, currentY - 2, valueX, currentY - 2);
+  doc.setLineWidth(1);
+  doc.line(labelX, currentY - 3, valueX, currentY - 3);
 
-  doc.setFontSize(11);
+  doc.setFillColor(128, 0, 32);
+  doc.rect(summaryX, currentY + 2, summaryWidth, 12, 'F');
+
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(128, 0, 32);
-  doc.text('Grand Total:', labelX, currentY);
-  doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY, { align: 'right' });
+  doc.setTextColor(255, 255, 255);
+  doc.text('Grand Total:', labelX, currentY + 9);
+  doc.text(`Rs. ${formatCurrency(quotation.grand_total)}`, valueX, currentY + 9, { align: 'right' });
 
   if (quotation.advance_paid) {
-    currentY += 7;
+    currentY += 20;
+    doc.setFillColor(240, 253, 244);
+    doc.rect(summaryX, currentY, summaryWidth, 6, 'F');
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(40, 167, 69);
-    doc.text('Advance Paid:', labelX, currentY);
-    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY, { align: 'right' });
+    doc.setTextColor(22, 163, 74);
+    doc.text('Advance Paid:', labelX, currentY + 4);
+    doc.text(`Rs. ${formatCurrency(quotation.advance_paid)}`, valueX, currentY + 4, { align: 'right' });
 
     currentY += 6;
+    doc.setFillColor(254, 242, 242);
+    doc.rect(summaryX, currentY, summaryWidth, 6, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(220, 53, 69);
-    doc.text('Balance Due:', labelX, currentY);
-    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY, { align: 'right' });
+    doc.setTextColor(220, 38, 38);
+    doc.text('Balance Due:', labelX, currentY + 4);
+    doc.text(`Rs. ${formatCurrency(quotation.balance_due || 0)}`, valueX, currentY + 4, { align: 'right' });
+    currentY += 6;
+  } else {
+    currentY += 14;
   }
 
   return currentY + 10;
@@ -492,6 +532,12 @@ export async function generateQuotationPDF(quotation: QuotationData) {
   try {
     const doc = new jsPDF();
     const companyDetails = { ...DEFAULT_COMPANY_DETAILS, ...quotation.company_details };
+
+    try {
+      await addLogoToHeader(doc, 15, 20, 22);
+    } catch (error) {
+      console.warn('Logo loading failed, continuing without logo');
+    }
 
     const validUntil = new Date();
     validUntil.setDate(validUntil.getDate() + (quotation.validity_days || 7));

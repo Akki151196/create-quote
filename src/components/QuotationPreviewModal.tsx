@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Users, Download } from 'lucide-react';
+import { X, Calendar, MapPin, Users, Download, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { generateQuotationPDF } from '../utils/pdfGenerator';
+import { useAuth } from '../contexts/AuthContext';
 
 interface QuotationItem {
   id: string;
@@ -41,12 +42,15 @@ interface Quotation {
 interface QuotationPreviewModalProps {
   quotationId: string;
   onClose: () => void;
+  onStatusChange?: () => void;
 }
 
-export function QuotationPreviewModal({ quotationId, onClose }: QuotationPreviewModalProps) {
+export function QuotationPreviewModal({ quotationId, onClose, onStatusChange }: QuotationPreviewModalProps) {
+  const { user } = useAuth();
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     loadQuotation();
@@ -93,6 +97,94 @@ export function QuotationPreviewModal({ quotationId, onClose }: QuotationPreview
     }
   };
 
+  const handleAccept = async () => {
+    if (!quotation || !user) return;
+
+    if (!confirm('Accept this quotation? This will automatically create a calendar event and expense tracking entry.')) {
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const { error: updateError } = await supabase
+        .from('quotations')
+        .update({ status: 'accepted' })
+        .eq('id', quotationId);
+
+      if (updateError) throw updateError;
+
+      const { data: eventData, error: eventError } = await supabase
+        .from('calendar_events')
+        .insert({
+          quotation_id: quotationId,
+          event_name: `${quotation.event_type} - ${quotation.client_name}`,
+          event_date: quotation.event_date,
+          event_type: quotation.event_type,
+          client_name: quotation.client_name,
+          client_phone: quotation.client_phone,
+          venue: quotation.event_venue || '',
+          guest_count: quotation.number_of_guests,
+          total_revenue: quotation.grand_total,
+          status: 'Confirmed',
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (eventError) throw eventError;
+
+      const { error: expenseError } = await supabase
+        .from('event_expenses')
+        .insert({
+          event_id: eventData.id,
+          quotation_id: quotationId,
+          total_expenses: 0,
+          profit: quotation.grand_total,
+          profit_percentage: 100,
+          status: 'Pending',
+          created_by: user.id,
+        });
+
+      if (expenseError) throw expenseError;
+
+      alert('Quotation accepted! Calendar event and expense tracking entry created successfully.');
+      onStatusChange?.();
+      onClose();
+    } catch (error) {
+      console.error('Error accepting quotation:', error);
+      alert('Failed to accept quotation. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!quotation) return;
+
+    if (!confirm('Reject this quotation?')) {
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('quotations')
+        .update({ status: 'rejected' })
+        .eq('id', quotationId);
+
+      if (error) throw error;
+
+      alert('Quotation rejected successfully.');
+      onStatusChange?.();
+      onClose();
+    } catch (error) {
+      console.error('Error rejecting quotation:', error);
+      alert('Failed to reject quotation. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -113,24 +205,46 @@ export function QuotationPreviewModal({ quotationId, onClose }: QuotationPreview
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-maroon-800 to-maroon-950 text-white p-6 flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Quotation Preview</h2>
-            <p className="text-maroon-200 text-sm mt-1">{quotation.quotation_number}</p>
+        <div className="sticky top-0 bg-gradient-to-r from-maroon-800 to-maroon-950 text-white p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-2xl font-bold">Quotation Preview</h2>
+              <p className="text-maroon-200 text-sm mt-1">{quotation.quotation_number}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-maroon-200 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            {quotation.status !== 'accepted' && quotation.status !== 'rejected' && (
+              <>
+                <button
+                  onClick={handleAccept}
+                  disabled={processing}
+                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {processing ? 'Processing...' : 'Accept Quotation'}
+                </button>
+                <button
+                  onClick={handleReject}
+                  disabled={processing}
+                  className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Reject
+                </button>
+              </>
+            )}
             <button
               onClick={handleDownloadPDF}
               className="flex items-center gap-2 bg-white text-maroon-800 px-4 py-2 rounded-lg hover:bg-maroon-50 transition-colors"
             >
               <Download className="w-4 h-4" />
               Download PDF
-            </button>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-maroon-200 transition-colors"
-            >
-              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
